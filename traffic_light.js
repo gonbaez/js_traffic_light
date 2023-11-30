@@ -17,46 +17,83 @@
 const { log } = console;
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Turn all lights off dunction
+  // Turn all lights off function
   const allLightsOff = function () {
     Array.from(document.getElementsByClassName("light")).forEach((light) => {
       light.classList.remove("on");
     });
   };
 
+  const buttonClick = function (e) {
+    if (document.querySelector(`.${e.target.id}`).classList.contains("on")) {
+      // If light is on then turn it off
+      document.querySelector(`.${e.target.id}`).classList.remove("on");
+    } else {
+      // If I am turning the light on, turn all others off.
+      allLightsOff();
+      document.querySelector(`.${e.target.id}`).classList.add("on");
+    }
+  };
+
   // Turn light on with button
-  document.querySelector("footer").addEventListener("click", (e) => {
-    allLightsOff();
-    document.querySelector(`.${e.target.id}`).classList.add("on");
-  });
+  document.querySelector("footer").addEventListener("click", buttonClick);
 
   // Lights on and off on hover
-  Array.from(document.getElementsByClassName("light")).forEach((light) => {
-    light.addEventListener("mouseover", (e) => {
-      allLightsOff();
-      e.target.classList.add("on");
-    });
+  const removeOnClassToLight = function (e) {
+    e.target.classList.remove("on");
+  };
 
-    light.addEventListener("mouseleave", (e) => {
-      e.target.classList.remove("on");
+  const addOnClassToLight = function (e) {
+    allLightsOff();
+    e.target.classList.add("on");
+  };
+
+  const addHover = function () {
+    Array.from(document.getElementsByClassName("light")).forEach((light) => {
+      light.addEventListener("mouseover", addOnClassToLight);
+
+      light.addEventListener("mouseleave", removeOnClassToLight);
     });
-  });
+  };
+
+  const removeHover = function () {
+    Array.from(document.getElementsByClassName("light")).forEach((light) => {
+      light.removeEventListener("mouseover", addOnClassToLight);
+
+      light.removeEventListener("mouseleave", removeOnClassToLight);
+    });
+  };
+
+  addHover();
 
   // Automatic light
+  const startAutomaticLights = function () {
+    // Remove hover from lights
+    removeHover();
 
-  const refRedLight = document.querySelector(".light.stop");
-  const refCautionLight = document.querySelector(".light.caution");
-  const refGreenight = document.querySelector(".light.go");
+    // Remove listener from footer
+    document.querySelector("footer").removeEventListener("click", buttonClick);
 
-  document.getElementById("start-timer").addEventListener("click", (e) => {
+    // Start timers
+    var intervalId = startLights(3000, 1000, 5000);
+  };
+
+  const stopAutomaticLights = function () {
+    // Stop timer
+    clearInterval(intervalId);
+    // Add hover
+    addHover();
+
+    // Add listener to footer
+    document.querySelector("footer").addEventListener("click", buttonClick);
+  };
+
+  const startLights = function (stopTime, cautionTime, goTime) {
+    // Returns the timer id to then be able to stop it.
     allLightsOff();
     refRedLight.classList.add("on");
 
-    const greenTime = 5000;
-    const redTime = 3000;
-    const cautionTime = 1000;
-
-    setInterval(() => {
+    return setInterval(() => {
       setTimeout(() => {
         log("amber and red");
 
@@ -71,9 +108,23 @@ document.addEventListener("DOMContentLoaded", () => {
             log("red");
             allLightsOff();
             refRedLight.classList.add("on");
-          }, greenTime);
+          }, goTime);
         }, cautionTime);
-      }, redTime);
-    }, greenTime + redTime + cautionTime);
+      }, stopTime);
+    }, goTime + stopTime + cautionTime);
+  };
+
+  const refRedLight = document.querySelector(".light.stop");
+  const refCautionLight = document.querySelector(".light.caution");
+  const refGreenight = document.querySelector(".light.go");
+
+  // Start and Stop buttons
+  document.querySelector("header").addEventListener("click", (e) => {
+    console.log(e);
+    if (e.target.id === "start-timer") {
+      startAutomaticLights();
+    } else {
+      stopAutomaticLights();
+    }
   });
 });
