@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
-  // Turn light on
+  // Turn light on with button
   document.querySelector("footer").addEventListener("click", (e) => {
     allLightsOff();
     document.querySelector(`.${e.target.id}`).classList.add("on");
@@ -36,8 +36,44 @@ document.addEventListener("DOMContentLoaded", () => {
       allLightsOff();
       e.target.classList.add("on");
     });
+
     light.addEventListener("mouseleave", (e) => {
       e.target.classList.remove("on");
     });
+  });
+
+  // Automatic light
+
+  const refRedLight = document.querySelector(".light.stop");
+  const refCautionLight = document.querySelector(".light.caution");
+  const refGreenight = document.querySelector(".light.go");
+
+  document.getElementById("start-timer").addEventListener("click", (e) => {
+    allLightsOff();
+    refRedLight.classList.add("on");
+
+    const greenTime = 5000;
+    const redTime = 3000;
+    const cautionTime = 1000;
+
+    setInterval(() => {
+      setTimeout(() => {
+        log("amber and red");
+
+        refCautionLight.classList.add("on");
+
+        setTimeout(() => {
+          log("green");
+          allLightsOff();
+          refGreenight.classList.add("on");
+
+          setTimeout(() => {
+            log("red");
+            allLightsOff();
+            refRedLight.classList.add("on");
+          }, greenTime);
+        }, cautionTime);
+      }, redTime);
+    }, greenTime + redTime + cautionTime);
   });
 });
