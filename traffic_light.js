@@ -26,11 +26,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const buttonClick = function (e) {
     if (document.querySelector(`.${e.target.id}`).classList.contains("on")) {
-      // If light is on then turn it off
       document.querySelector(`.${e.target.id}`).classList.remove("on");
     } else {
-      // If I am turning the light on, turn all others off.
-      allLightsOff();
       document.querySelector(`.${e.target.id}`).classList.add("on");
     }
   };
@@ -75,12 +72,13 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelector("footer").removeEventListener("click", buttonClick);
 
     // Start timers
-    var intervalId = startLights(3000, 1000, 5000);
+    automaticLights.start();
   };
 
   const stopAutomaticLights = function () {
     // Stop timer
-    clearInterval(intervalId);
+    automaticLights.stop();
+
     // Add hover
     addHover();
 
@@ -88,39 +86,71 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelector("footer").addEventListener("click", buttonClick);
   };
 
-  const startLights = function (stopTime, cautionTime, goTime) {
-    // Returns the timer id to then be able to stop it.
-    allLightsOff();
-    refRedLight.classList.add("on");
+  const automaticLights = {
+    stopTime: 3000,
+    cautionTime: 1000,
+    goTime: 5000,
 
-    return setInterval(() => {
-      setTimeout(() => {
-        log("amber and red");
+    start() {
+      // Do one loop outside while we wait for the interval
+      allLightsOff();
+      buttonClick({ target: { id: "stop" } });
 
-        refCautionLight.classList.add("on");
+      this.timeOutIds = [];
 
+      this.timeOutIds.push(
         setTimeout(() => {
-          log("green");
-          allLightsOff();
-          refGreenight.classList.add("on");
+          buttonClick({ target: { id: "caution" } });
 
+          this.timeOutIds.push(
+            setTimeout(() => {
+              allLightsOff();
+              buttonClick({ target: { id: "go" } });
+
+              this.timeOutIds.push(
+                setTimeout(() => {
+                  allLightsOff();
+                  buttonClick({ target: { id: "stop" } });
+                }, this.goTime)
+              );
+            }, this.cautionTime)
+          );
+        }, this.stopTime)
+      );
+
+      // Interval loop
+      this.intervalId = setInterval(() => {
+        this.timeOutIds.push(
           setTimeout(() => {
-            log("red");
-            allLightsOff();
-            refRedLight.classList.add("on");
-          }, goTime);
-        }, cautionTime);
-      }, stopTime);
-    }, goTime + stopTime + cautionTime);
-  };
+            buttonClick({ target: { id: "caution" } });
+            this.timeOutIds.push(
+              setTimeout(() => {
+                allLightsOff();
+                buttonClick({ target: { id: "go" } });
+                this.timeOutIds.push(
+                  setTimeout(() => {
+                    allLightsOff();
+                    buttonClick({ target: { id: "stop" } });
+                  }, this.goTime)
+                );
+              }, this.cautionTime)
+            );
+          }, this.stopTime)
+        );
+      }, this.goTime + this.stopTime + this.cautionTime);
+    },
 
-  const refRedLight = document.querySelector(".light.stop");
-  const refCautionLight = document.querySelector(".light.caution");
-  const refGreenight = document.querySelector(".light.go");
+    stop() {
+      clearInterval(this.intervalId);
+      this.timeOutIds.forEach((itemId) => {
+        clearTimeout(itemId);
+      });
+      allLightsOff();
+    },
+  };
 
   // Start and Stop buttons
   document.querySelector("header").addEventListener("click", (e) => {
-    console.log(e);
     if (e.target.id === "start-timer") {
       startAutomaticLights();
     } else {
