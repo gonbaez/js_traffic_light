@@ -24,10 +24,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
-  const buttonClick = function (e) {
+  const buttonClick = function (e, turnOff = true) {
     if (document.querySelector(`.${e.target.id}`).classList.contains("on")) {
       document.querySelector(`.${e.target.id}`).classList.remove("on");
     } else {
+      if (turnOff) {
+        allLightsOff();
+      }
       document.querySelector(`.${e.target.id}`).classList.add("on");
     }
   };
@@ -100,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       this.timeOutIds.push(
         setTimeout(() => {
-          buttonClick({ target: { id: "caution" } });
+          buttonClick({ target: { id: "caution" } }, false);
 
           this.timeOutIds.push(
             setTimeout(() => {
