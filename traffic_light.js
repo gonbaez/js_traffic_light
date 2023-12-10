@@ -25,13 +25,15 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const buttonClick = function (e, turnOff = true) {
-    if (document.querySelector(`.${e.target.id}`).classList.contains("on")) {
-      document.querySelector(`.${e.target.id}`).classList.remove("on");
-    } else {
-      if (turnOff) {
-        allLightsOff();
+    if (e.target.tagName == "BUTTON") {
+      if (document.querySelector(`.${e.target.id}`).classList.contains("on")) {
+        document.querySelector(`.${e.target.id}`).classList.remove("on");
+      } else {
+        if (turnOff) {
+          allLightsOff();
+        }
+        document.querySelector(`.${e.target.id}`).classList.add("on");
       }
-      document.querySelector(`.${e.target.id}`).classList.add("on");
     }
   };
 
