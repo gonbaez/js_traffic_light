@@ -24,7 +24,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
-  const buttonClick = function (e, turnOff = true) {
+  // Footer button click
+  const footerButtonClick = function (e, turnOff = true) {
     if (e.target.tagName == "BUTTON") {
       if (document.querySelector(`.${e.target.id}`).classList.contains("on")) {
         document.querySelector(`.${e.target.id}`).classList.remove("on");
@@ -38,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // Turn light on with button
-  document.querySelector("footer").addEventListener("click", buttonClick);
+  document.querySelector("footer").addEventListener("click", footerButtonClick);
 
   // Lights on and off on hover
   const removeOnClassToLight = function (e) {
@@ -68,98 +69,76 @@ document.addEventListener("DOMContentLoaded", () => {
 
   addHover();
 
-  // Automatic light
-  const startAutomaticLights = function () {
-    // Remove hover from lights
-    removeHover();
+  // AUTOMATIC LIGHTS
 
-    // Remove listener from footer
-    document.querySelector("footer").removeEventListener("click", buttonClick);
+  let timer;
 
-    // Start timers
-    automaticLights.start();
-  };
+  let i = 0;
 
-  const stopAutomaticLights = function () {
-    // Stop timer
-    automaticLights.stop();
+  const sequence = [
+    { duration: 1000, items: ["stop"] },
+    { duration: 2000, items: ["stop", "caution"] },
+    // { duration: 3000, items: ["caution"] },
+    // { duration: 500, items: [] },
+    // { duration: 500, items: ["caution"] },
+    // { duration: 500, items: [] },
+    // { duration: 500, items: ["caution"] },
+    // { duration: 500, items: [] },
+    // { duration: 500, items: ["caution"] },
+    { duration: 4000, items: ["go"] },
+  ];
 
-    // Add hover
-    addHover();
+  function next() {
+    timer = setTimeout(() => {
+      console.log(sequence[i].duration);
 
-    // Add listener to footer
-    document.querySelector("footer").addEventListener("click", buttonClick);
-  };
-
-  const automaticLights = {
-    stopTime: 3000,
-    cautionTime: 1000,
-    goTime: 5000,
-
-    start() {
-      // Do one loop outside while we wait for the interval
       allLightsOff();
-      buttonClick({ target: { id: "stop" } });
-
-      this.timeOutIds = [];
-
-      this.timeOutIds.push(
-        setTimeout(() => {
-          buttonClick({ target: { id: "caution" } }, false);
-
-          this.timeOutIds.push(
-            setTimeout(() => {
-              allLightsOff();
-              buttonClick({ target: { id: "go" } });
-
-              this.timeOutIds.push(
-                setTimeout(() => {
-                  allLightsOff();
-                  buttonClick({ target: { id: "stop" } });
-                }, this.goTime)
-              );
-            }, this.cautionTime)
-          );
-        }, this.stopTime)
-      );
-
-      // Interval loop
-      this.intervalId = setInterval(() => {
-        this.timeOutIds.push(
-          setTimeout(() => {
-            buttonClick({ target: { id: "caution" } });
-            this.timeOutIds.push(
-              setTimeout(() => {
-                allLightsOff();
-                buttonClick({ target: { id: "go" } });
-                this.timeOutIds.push(
-                  setTimeout(() => {
-                    allLightsOff();
-                    buttonClick({ target: { id: "stop" } });
-                  }, this.goTime)
-                );
-              }, this.cautionTime)
-            );
-          }, this.stopTime)
+      for (let j = 0; j < sequence[i].items.length; j++) {
+        footerButtonClick(
+          { target: { id: sequence[i].items[j], tagName: "BUTTON" } },
+          j == 0
         );
-      }, this.goTime + this.stopTime + this.cautionTime);
-    },
+      }
+      i++;
 
-    stop() {
-      clearInterval(this.intervalId);
-      this.timeOutIds.forEach((itemId) => {
-        clearTimeout(itemId);
-      });
-      allLightsOff();
-    },
-  };
+      if (i >= sequence.length) {
+        i = 0;
+      }
+
+      next();
+    }, sequence[i].duration);
+  }
 
   // Start and Stop buttons
   document.querySelector("header").addEventListener("click", (e) => {
     if (e.target.id === "start-timer") {
-      startAutomaticLights();
+      // Clear existing timeout just in case.
+      clearTimeout(timer);
+
+      // Always start sequence from 0
+      i = 0;
+
+      // Remove hover from lights
+      removeHover();
+
+      // Remove listener from footer
+      document
+        .querySelector("footer")
+        .removeEventListener("click", footerButtonClick);
+
+      next();
     } else {
-      stopAutomaticLights();
+      clearTimeout(timer);
+
+      allLightsOff();
+
+      // Add hover
+      addHover();
+
+      // Add footer button click
+      document
+        .querySelector("footer")
+        .addEventListener("click", footerButtonClick);
     }
   });
 });
