@@ -78,35 +78,34 @@ document.addEventListener("DOMContentLoaded", () => {
   const sequence = [
     { duration: 1000, items: ["stop"] },
     { duration: 2000, items: ["stop", "caution"] },
-    // { duration: 3000, items: ["caution"] },
-    // { duration: 500, items: [] },
-    // { duration: 500, items: ["caution"] },
-    // { duration: 500, items: [] },
-    // { duration: 500, items: ["caution"] },
-    // { duration: 500, items: [] },
-    // { duration: 500, items: ["caution"] },
-    { duration: 4000, items: ["go"] },
+    { duration: 3000, items: ["caution"] },
+    { duration: 500, items: [] },
+    { duration: 500, items: ["caution"] },
+    { duration: 500, items: [] },
+    { duration: 500, items: ["caution"] },
+    { duration: 500, items: [] },
+    { duration: 500, items: ["caution"] },
+    { duration: 5000, items: ["go"] },
   ];
 
   function next() {
+    allLightsOff();
+    for (let j = 0; j < sequence[i].items.length; j++) {
+      footerButtonClick(
+        { target: { id: sequence[i].items[j], tagName: "BUTTON" } },
+        j == 0
+      );
+    }
+
     timer = setTimeout(() => {
-      console.log(sequence[i].duration);
-
-      allLightsOff();
-      for (let j = 0; j < sequence[i].items.length; j++) {
-        footerButtonClick(
-          { target: { id: sequence[i].items[j], tagName: "BUTTON" } },
-          j == 0
-        );
-      }
-      i++;
-
-      if (i >= sequence.length) {
-        i = 0;
-      }
-
       next();
     }, sequence[i].duration);
+
+    i++;
+
+    if (i >= sequence.length) {
+      i = 0;
+    }
   }
 
   // Start and Stop buttons
